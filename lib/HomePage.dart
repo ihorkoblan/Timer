@@ -13,10 +13,10 @@ import 'list_view_widget.dart';
 
 class ListWidgetHomePage extends StatefulWidget {
   @override
-  _ListWidgetHomePageState createState() => _ListWidgetHomePageState();
+  _ListWidgetHomePage createState() => _ListWidgetHomePage();
 }
 
-class _ListWidgetHomePageState extends State<ListWidgetHomePage> {
+class _ListWidgetHomePage extends State<ListWidgetHomePage> {
   TimerService _timerService = TimerServiceImp();
 
   final List<String> _timerData = [];
@@ -24,11 +24,10 @@ class _ListWidgetHomePageState extends State<ListWidgetHomePage> {
   @override
   void initState() {
     super.initState();
-
-    _timerService.onTimerUpdate = () {
-      setState(() {});
-    };
   }
+
+  @override
+  void dispose() {}
 
   void _startTimer() {
     _timerService.start();
@@ -68,41 +67,54 @@ class _ListWidgetHomePageState extends State<ListWidgetHomePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: 25),
-
-                TextFieldWidget(
-                  sec: _timerService.getTimerValues().seconds,
-                  min: _timerService.getTimerValues().minutes,
-                  hour: _timerService.getTimerValues().hours,
+                StreamBuilder<TimerModel>(
+                  stream: _timerService.timerStream,
+                  builder: (context, snapshot) {
+                    return Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 25),
+                          TextFieldWidget(
+                            sec: _timerService.getTimerValues().seconds,
+                            min: _timerService.getTimerValues().minutes,
+                            hour: _timerService.getTimerValues().hours,
+                          ),
+                          SizedBox(width: 25),
+                          ButtonsWidget(
+                            startButtonEnabled:
+                                _timerService.getTimerStatus() !=
+                                    TimerStatus.working,
+                            pauseButtonEnabled:
+                                _timerService.getTimerStatus() !=
+                                    TimerStatus.paused,
+                            stopButtonEnabled: true,
+                            onStartAction: () {
+                              _startTimer();
+                            },
+                            onPauseAction: () {
+                              _pause();
+                            },
+                            onStopAction: () {
+                              _reset();
+                            },
+                          ),
+                          SizedBox(width: 25),
+                          SaveButtonWidget(
+                            saveButtonEnabled:
+                                (_timerService.getTimerStatus() ==
+                                        TimerStatus.working) ||
+                                    (_timerService.getTimerStatus() ==
+                                        TimerStatus.paused),
+                            onSaveAction: () {
+                              _addTime();
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-                SizedBox(width: 25),
-                ButtonsWidget(
-                  startButtonEnabled: _timerService.getTimerStatus() != TimerStatus.working,
-                  pauseButtonEnabled: _timerService.getTimerStatus() != TimerStatus.paused,
-                  stopButtonEnabled: true,
-                  onStartAction: () {
-                    _startTimer();
-                  },
-                  onPauseAction: () {
-                    _pause();
-                  },
-                  onStopAction: () {
-                    _reset();
-                  },
-                ),
-                SizedBox(width: 25),
-                SaveButtonWidget(
-                  saveButtonEnabled: (_timerService.getTimerStatus() == TimerStatus.working) ||
-                      (_timerService.getTimerStatus() == TimerStatus.paused),
-                  onSaveAction: () {
-                    _addTime();
-                  },
-                ),
-
-                // ElevatedButton( //startButtonAvailable? _startTimer : null,
-                //   onPressed: _mode != TimerMode.on ? _addTime : null,
-                //   child: Text('Save'),
-                //   style: styleSaveButton,
-                // ),
               ],
             ),
           ),

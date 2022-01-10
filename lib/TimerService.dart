@@ -11,9 +11,9 @@ abstract class TimerService {
   TimerModel getTimerValues();
   TimerStatus getTimerStatus();
 
-  Function()? onTimerUpdate; // замінити на timerStream
-
-  // late Stream<TimerModel> timerStream;
+//  Function()? onTimerUpdate; // замінити на timerStream
+  // Function()? timerStream;
+  late Stream<TimerModel> timerStream;
 }
 
 class TimerServiceImp extends TimerService {
@@ -23,21 +23,24 @@ class TimerServiceImp extends TimerService {
   Timer? _timer;
   TimerModel _model = TimerModel(0, 0, 0);
 
-  // StreamController<TimerModel> _streamController = StreamController<TimerModel>();
+  StreamController<TimerModel> _streamController =
+      StreamController<TimerModel>();
 
-  // @override
-  // Stream<TimerModel> get timerStream => _streamController.stream;
+  @override
+  Stream<TimerModel> get timerStream => _streamController.stream;
 
   @override
   void pause() {
     _status = TimerStatus.paused;
     _resetTimer();
-    onTimerUpdate!();
+    // onTimerUpdate!();
+    _streamController.add(_model);
   }
 
   @override
   void start() {
-    onTimerUpdate!();
+    // onTimerUpdate!();
+    _streamController.add(_model);
 
     _status = TimerStatus.working;
 
@@ -53,8 +56,8 @@ class TimerServiceImp extends TimerService {
           _model.minutes = 0;
         }
       }
-
-      onTimerUpdate!();
+      _streamController.add(_model);
+      // onTimerUpdate!();
     });
   }
 
@@ -63,7 +66,8 @@ class TimerServiceImp extends TimerService {
     _status = TimerStatus.stopped;
     _resetTimer();
     _resetTimerModel();
-    onTimerUpdate!();
+    _streamController.add(_model);
+    //   onTimerUpdate!();
   }
 
   @override
